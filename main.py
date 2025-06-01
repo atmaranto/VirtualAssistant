@@ -1,35 +1,40 @@
 import time
 
+from langchain_core.runnables import RunnableLambda
+
 from io import BytesIO
 from faster_whisper import WhisperModel
-
-from langchain_community.chat_models.ollama import ChatOllama
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.language_models import BaseChatModel
 
 from threading import Thread, Lock
 
 import numpy as np
 
-from assistant.transcriber import Transcriber
-
-model = ChatOllama(model="llama3.1")
+from assistant import Assistant
+from assistant.assistant import create_basic_llm
 
 if __name__ == '__main__':
     wmodel = WhisperModel("small", device="cpu")
-    assistant = Assistant(llm=model, model=wmodel, wake_words=["hey"])
+    model, chat_history, store = create_basic_llm("llama3:latest")
+
+    model = RunnableLambda(lambda x: dict(
+        system_message="You are a helpful agent named Frame that runs on a set of advanced smart glasses. You will respond in a cheeky but accurate way to user queries based on the provided context and history.",
+        optional_user_prompt=[],
+        **x)
+    ) | model
+
+    assistant = Assistant(llm=model, model=wmodel, wake_words=["hey"], configuration={"session_id": "test_session"})
 
     # Get audio from ffmpeg dshow and feed it to the assistant
     import subprocess
     process = subprocess.Popen(
         ["ffmpeg", "-f", "dshow", "-i", "audio=Microphone (HyperX SoloCast)", "-ac", "1", "-ar", "16000", "-af", "silenceremove=1:0:-50dB", "-f", "s16le", "-"],
         stdout=subprocess.PIPE,
-        # stderr=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         stdin=subprocess.DEVNULL,
         # bufsize=10**7  # Set buffer size to 100MB
     )
 
-    assistant.on('wake_word_detected', lambda wake_word: print(f"Wake word detected: {wake_word}"))
+    assistant.on('wake_word_detected', lambda wake_word, transcription: print(f"Wake word detected: {wake_word}"))
     assistant.on('transcription_word', lambda transcription: print(f"Large transcription: {transcription}"))
 
     assistant.on('audio_process', lambda audio: print(f"Processing large audio chunk of size {len(audio)}"))

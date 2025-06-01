@@ -22,10 +22,9 @@ class Transcriber(Eventable):
         self.transcription_history = []
 
         self.transcription_lock = Lock()
-        self.on('transcription', self.transcription)
+        self.on('transcription_raw', self.transcription_raw)
     
-    def transcription(self, transcription):
-        segments, ti = transcription
+    def transcription_raw(self, segments, ti):
         segments = list(segments)
         self.transcription_history.append(segments)
 
@@ -54,22 +53,23 @@ class Transcriber(Eventable):
         if sum(len(b) for b in self.large_buffer) >= self.large_buffer_size or (time.time() - self.large_buffer_start) > self.large_buffer_length or self.large_silence_for > self.silence_margin:
             # Process the accumulated audio
             self.large_buffer_start = time.time()
-            self.process_audio('large')
+            self.process_audio()
     
     def _process_audio(self, audio: np.ndarray, type: str = 'small'):
         with self.transcription_lock:
-            transcription = self.model.transcribe(audio, beam_size=5, language="en", word_timestamps=True, vad_filter=True)
+            segs, ti = self.model.transcribe(audio, beam_size=5, language="en", word_timestamps=True, vad_filter=True)
         
-        self.emit('transcription_' + type, transcription)
+        segs = list(segs)
+        self.emit('transcription_raw', segs, ti)
     
-    def process_audio(self, type: str = 'small'):
+    def process_audio(self):
         # Combine small buffer into a single audio chunk
         if not self.large_buffer:
             return
         audio_stream = np.concatenate(self.large_buffer)
         self.large_buffer = []
         
-        self.emit('audio_process_' + type, audio_stream)
+        self.emit('audio_process', audio_stream)
 
         with self.transcription_lock:
             # Convert bytes to numpy array
