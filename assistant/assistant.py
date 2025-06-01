@@ -5,8 +5,8 @@ from langchain_core.runnables import RunnableWithMessageHistory, Runnable
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
-from langchain_community.chat_models.ollama import ChatOllama
-from langchain_community.embeddings.ollama import OllamaEmbeddings
+from langchain_ollama import ChatOllama
+from langchain_ollama import OllamaEmbeddings
 
 from .transcriber import Transcriber
 

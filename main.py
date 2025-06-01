@@ -26,13 +26,23 @@ if __name__ == '__main__':
 
     # Get audio from ffmpeg dshow and feed it to the assistant
     import subprocess
-    process = subprocess.Popen(
-        ["ffmpeg", "-f", "dshow", "-i", "audio=Microphone (HyperX SoloCast)", "-ac", "1", "-ar", "16000", "-af", "silenceremove=1:0:-50dB", "-f", "s16le", "-"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        stdin=subprocess.DEVNULL,
-        # bufsize=10**7  # Set buffer size to 100MB
-    )
+
+    import platform
+    if platform.system() == "Windows":
+        process = subprocess.Popen(
+            ["ffmpeg", "-f", "dshow", "-i", "audio=Microphone (HyperX SoloCast)", "-ac", "1", "-ar", "16000", "-af", "silenceremove=1:0:-50dB", "-f", "s16le", "-"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            # bufsize=10**7  # Set buffer size to 100MB
+        )
+    else:
+        process = subprocess.Popen(
+            ["arecord", "-f", "S16_LE", "-c", "1", "-r", "16000"],
+            stdout=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+            # bufsize=10**7  # Set buffer size to 100MB
+        )
 
     assistant.on('wake_word_detected', lambda wake_word, transcription: print(f"Wake word detected: {wake_word}"))
     assistant.on('transcription_word', lambda transcription: print(f"Large transcription: {transcription}"))
