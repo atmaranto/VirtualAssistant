@@ -14,6 +14,8 @@ from typing import Optional
 
 from collections import defaultdict
 
+import re
+
 class Assistant(Transcriber):
     def __init__(self, llm: BaseChatModel, model, wake_words=[], vector_store: Optional[VectorStore] = None, configuration: Optional[dict] = None):
         super().__init__(model=model, wake_words=wake_words)
@@ -27,7 +29,7 @@ class Assistant(Transcriber):
     def process_transcription(self, segments, ti):
         for wake_word in self.wake_words:
             for segment in segments:
-                if wake_word.lower() in segment.text.lower():
+                if wake_word.lower() in re.sub(r"[^\w\s]", "", segment.text.lower()):
                     self.emit('wake_word_detected', wake_word, segment.text)
                     return
     
