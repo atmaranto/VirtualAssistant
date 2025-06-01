@@ -35,8 +35,13 @@ class Assistant(Transcriber):
     
     def handle_wake_word(self, wake_word, segment_text):
         response = self.llm.stream({"input": ("human", segment_text)}, self.configuration)
+        total = ""
         for message in response:
             print(message.content, end="", flush=True)
+            self.emit('assistant_speak_word', message.content)
+            total += message.content
+        print()
+        self.emit('assistant_speak', total)
 
 def create_basic_llm(model):
     embeddings = OllamaEmbeddings(model=model)
