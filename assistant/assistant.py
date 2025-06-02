@@ -44,10 +44,6 @@ class Assistant(Transcriber):
         self.emit('assistant_speak', total)
 
 def create_basic_llm(model):
-    embeddings = OllamaEmbeddings(model=model)
-    store = InMemoryVectorStore(embeddings)
-    model = ChatOllama(model=model)
-
     template = ChatPromptTemplate.from_messages([
         ("system", "{system_message}"),
         MessagesPlaceholder(variable_name="optional_user_prompt"),
@@ -60,4 +56,4 @@ def create_basic_llm(model):
 
     model = RunnableWithMessageHistory(template | model, chat_history.__getitem__, input_messages_key="input", history_messages_key="history")
 
-    return model, chat_history, store
+    return model, chat_history

@@ -1,6 +1,7 @@
 import time
 
 from langchain_core.runnables import RunnableLambda
+from langchain_community.tools import BraveSearch
 
 from io import BytesIO
 from faster_whisper import WhisperModel
@@ -14,7 +15,7 @@ from assistant.assistant import create_basic_llm
 
 if __name__ == '__main__':
     wmodel = WhisperModel("small", device="cpu")
-    model, chat_history, store = create_basic_llm("llama3:latest")
+    model, chat_history = create_basic_llm()
 
     model = RunnableLambda(lambda x: dict(
         system_message="You are a helpful agent named Frame that runs on a set of advanced smart glasses. You will respond in a cheeky but accurate way to user queries based on the provided context and history.",
