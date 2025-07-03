@@ -43,12 +43,14 @@ class Assistant(Transcriber):
                     for tool_call in message.tool_calls:
                         self.emit('tool', tool_call, tool_responses)
                 # print(message.content, end="", flush=True)
-                self.emit('assistant_speak_word', message.content)
+                if message.content:
+                    self.emit('assistant_speak_word', message.content)
                 total += message.content
             # print()
             self.emit('assistant_speak', total)
             if not tool_responses:
                 break
+            response = self.llm.stream({"input": ("tool", "\n".join(tool_responses))}, self.configuration)
 
 def create_basic_llm(model):
     template = ChatPromptTemplate.from_messages([
