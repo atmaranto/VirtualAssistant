@@ -1,0 +1,21 @@
+[project]
+name = "simple-voice-assistant"
+version = "0.0.1"
+authors = [
+  { name="Anthony Maranto", email="author@example.com" },
+]
+description = "A simple voice assistant meant to be easily extensible."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/atmaranto/VoiceAssistant"
+Issues = "https://github.com/atmaranto/VoiceAssistant/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
