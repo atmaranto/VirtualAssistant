@@ -4,12 +4,12 @@ import numpy as np
 from .eventable import Eventable
 
 class Transcriber(Eventable):
-    def __init__(self, model, audio_rate: int = 16000, wake_words=[]):
+    def __init__(self, model, audio_rate: int = 16000, wake_words=[], large_buffer_length: int = 15):
         super().__init__()
         self.model = model
         self.wake_words = wake_words
 
-        self.large_buffer_length = 15
+        self.large_buffer_length = large_buffer_length
         self.large_buffer_start = time.time()
         self.audio_rate = audio_rate
 

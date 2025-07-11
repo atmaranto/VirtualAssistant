@@ -1,15 +1,9 @@
-import time
-
 from langchain_core.runnables import RunnableLambda
 from langchain_community.tools import tool
 
-from io import BytesIO
 from faster_whisper import WhisperModel
 
-from threading import Thread, Lock
-
 from langchain_ollama import ChatOllama
-import numpy as np
 
 from assistant import Assistant
 from assistant.assistant import create_basic_llm
@@ -18,7 +12,8 @@ if __name__ == '__main__':
     import argparse
     ap = argparse.ArgumentParser(description="Run the assistant with audio input.")
     
-    ap.add_argument("--model", type=str, default="small", help="Whisper model size (e.g., small, medium, large)")
+    ap.add_argument("--transcription-size", type=str, default="small", help="Whisper model size (e.g., small, medium, large)")
+    ap.add_argument("--model", type=str, default="qwen3:8b", help="LLM model to use (e.g., qwen3:8b)")
     ap.add_argument("--mic-name", type=str, default=None, help="Name of the microphone to use (if applicable)")
 
     args = ap.parse_args()
@@ -29,9 +24,9 @@ if __name__ == '__main__':
     import datetime
     import colorama
 
-    wmodel = WhisperModel(args.model, device="cpu")
+    wmodel = WhisperModel(args.transcription_size, device="cpu")
 
-    orig_model = ChatOllama(model="qwen3:8b", extract_reasoning=True)
+    orig_model = ChatOllama(model=args.model, extract_reasoning=True)
 
     @tool
     def get_current_time() -> str:

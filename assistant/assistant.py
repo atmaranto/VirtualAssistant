@@ -1,12 +1,8 @@
-from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.language_models import BaseChatModel
-from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
-from langchain_core.runnables import RunnableWithMessageHistory, Runnable
+from langchain_core.vectorstores import VectorStore
+from langchain_core.runnables import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.chat_history import InMemoryChatMessageHistory
-
-from langchain_ollama import ChatOllama
-from langchain_ollama import OllamaEmbeddings
 
 from .transcriber import Transcriber
 
