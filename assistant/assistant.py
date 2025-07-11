@@ -13,7 +13,7 @@ from collections import defaultdict
 import re
 
 class Assistant(Transcriber):
-    def __init__(self, llm: BaseChatModel, model, wake_words=[], vector_store: Optional[VectorStore] = None, configuration: Optional[dict] = None):
+    def __init__(self, llm: BaseChatModel, model, wake_words=[], true_wake_word=None, vector_store: Optional[VectorStore] = None, configuration: Optional[dict] = None):
         super().__init__(model=model, wake_words=wake_words)
         self.llm = llm
         self.vector_store = vector_store
@@ -25,9 +25,22 @@ class Assistant(Transcriber):
     def process_transcription(self, segments, ti):
         for wake_word in self.wake_words:
             for segment in segments:
-                if wake_word.lower() in re.sub(r"[^\w\s]", "", segment.text.lower()):
-                    self.emit('wake_word_detected', wake_word, segment.text)
-                    return
+                if isinstance(wake_word, re.Pattern):
+                    if re.search(wake_word, segment.text, re.IGNORECASE):
+                        if self.true_wake_word:
+                            segment = re.sub(wake_word, self.true_wake_word, segment.text, flags=re.IGNORECASE)
+                        self.emit('wake_word_detected', wake_word, segment.text)
+                        return
+                    elif re.compile(r"[\s,.!?;]*".join(wake_word.split()), re.IGNORECASE).search(segment.text):
+                        if self.true_wake_word:
+                            segment = re.sub(re.compile(r"[\s,.!?;]*".join(wake_word.split()), re.IGNORECASE), self.true_wake_word, segment.text)
+                        self.emit('wake_word_detected', wake_word, segment.text)
+                        return
+                    elif callable(wake_word):
+                        result = wake_word(segment.text)
+                        if not result: continue
+                        self.emit('wake_word_detected', wake_word, segment.text)
+                        return
     
     def handle_wake_word(self, wake_word, segment_text):
         response = self.llm.stream({"input": ("human", segment_text)}, self.configuration)
