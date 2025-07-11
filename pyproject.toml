@@ -1,6 +1,6 @@
 [project]
 name = "simple-virtual-assistant"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="Anthony Maranto", email="author@example.com" },
 ]
