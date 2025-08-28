@@ -18,6 +18,7 @@ class Assistant(Transcriber):
         self.llm = llm
         self.vector_store = vector_store
         self.configuration = configuration if configuration is not None else {}
+        self.true_wake_word = true_wake_word
 
         self.on('transcription_raw', self.process_transcription)
         self.on('wake_word_detected', self.handle_wake_word)
@@ -26,19 +27,21 @@ class Assistant(Transcriber):
         for wake_word in self.wake_words:
             for segment in segments:
                 if isinstance(wake_word, re.Pattern):
-                    if re.search(wake_word, segment.text, re.IGNORECASE):
+                    if wake_word.search(segment.text):
                         if self.true_wake_word:
-                            segment = re.sub(wake_word, self.true_wake_word, segment.text, flags=re.IGNORECASE)
+                            segment.text = wake_word.sub(self.true_wake_word, segment.text)
                         self.emit('wake_word_detected', wake_word, segment.text)
                         return
-                    elif re.compile(r"[\s,.!?;]*".join(wake_word.split()), re.IGNORECASE).search(segment.text):
-                        if self.true_wake_word:
-                            segment = re.sub(re.compile(r"[\s,.!?;]*".join(wake_word.split()), re.IGNORECASE), self.true_wake_word, segment.text)
+                elif callable(wake_word):
+                    result = wake_word(segment.text)
+                    if result:
                         self.emit('wake_word_detected', wake_word, segment.text)
                         return
-                    elif callable(wake_word):
-                        result = wake_word(segment.text)
-                        if not result: continue
+                else:
+                    pat = re.compile(r"[\s,.!?;]*".join(map(re.escape, wake_word.split())), re.IGNORECASE)
+                    if re.search(pat, segment.text):
+                        if self.true_wake_word:
+                            segment.text = re.sub(pat, self.true_wake_word, segment.text)
                         self.emit('wake_word_detected', wake_word, segment.text)
                         return
     
