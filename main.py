@@ -15,6 +15,7 @@ if __name__ == '__main__':
     ap.add_argument("--transcription-size", type=str, default="small", help="Whisper model size (e.g., small, medium, large)")
     ap.add_argument("--model", type=str, default="qwen3:8b", help="LLM model to use (e.g., qwen3:8b)")
     ap.add_argument("--mic-name", type=str, default=None, help="Name of the microphone to use (if applicable)")
+    ap.add_argument("--verbose", action="store_true", help="Enables logging that might interfere with stdout")
 
     args = ap.parse_args()
 
@@ -83,9 +84,11 @@ if __name__ == '__main__':
     assistant.on('wake_word_detected', lambda wake_word, transcription: print(f"Wake word detected: {wake_word}"))
     assistant.on('transcription_word', lambda transcription: print(f"Transcription: {colorama.Fore.RED}{transcription}{colorama.Style.RESET_ALL}"))
     assistant.on("assistant_speak_word", lambda text: print(f"{colorama.Fore.GREEN}{text}{colorama.Style.RESET_ALL}", end="", flush=True))
+    assistant.on("assistant_speak", lambda text: print())
     assistant.on('tool', tool_call)
 
-    assistant.on('audio_process', lambda audio: print(f"Processing large audio chunk of size {len(audio)}"))
+    if args.verbose:
+        assistant.on('audio_process', lambda audio: print(f"Processing large audio chunk of size {len(audio)}"))
 
     # assistant.on('audio_too_quiet', lambda dB: print(f"Audio too quiet: {dB} dB"))
 

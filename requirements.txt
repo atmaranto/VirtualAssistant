@@ -1,0 +1,7 @@
+langchain
+langchain-community
+langchain-core
+langchain-ollama
+colorama
+numpy
+faster-whisper
