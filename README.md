@@ -1,5 +1,5 @@
 # Description
-`simplevirtual-assistant` is an extremely simple Python module that allows one to create their own voice assistants, using the transcription ability of `faster-whisper`, the messaging ability of a configurable LLM, and the tooling ability of `langchain`.
+`simple-virtual-assistant` is an extremely simple Python module that allows one to create their own voice assistants, using the transcription ability of `faster-whisper`, the messaging ability of a configurable LLM, and the tooling ability of `langchain`.
 
 ## Caveat
 
